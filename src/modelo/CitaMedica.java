@@ -23,7 +23,7 @@ public class CitaMedica {
         this.setPaciente(paciente);
         this.setProfesionalSalud(profesionalSalud);
         this.detalleReceta = new ArrayList<>();
-    }GIT 
+    }
 
     public String getCodigoCita() {
         return codigoCita;

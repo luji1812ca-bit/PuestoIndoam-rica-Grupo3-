@@ -63,7 +63,7 @@ public class Medicamento {
         return stockActual <= stockMinimo;
     }
 
-    // Descuenta stock validando que la cantidad sea válida y haya disponibilidad(Encampsulamimiento)
+    // Descuenta stock validando que la cantidad sea válida y haya disponibilidad (Encapsulamiento)
     public void descontarStock(int cantidad) {
         if (cantidad <= 0) {
             throw new IllegalArgumentException("La cantidad a descontar debe ser mayor a cero.");
@@ -72,5 +72,9 @@ public class Medicamento {
             throw new IllegalArgumentException("No hay suficiente stock disponible.");
         }
         this.stockActual = this.stockActual - cantidad;
+    }
+
+    public String mostrarDetalle() {
+        return "[" + codigo + "] " + nombre + " | Stock actual: " + stockActual + " | Stock mínimo: " + stockMinimo;
     }
 }

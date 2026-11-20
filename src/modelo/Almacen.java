@@ -4,18 +4,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-// Se eligio el patron Singleton para garantizar una unica instancia centralizada del inventario en todo el puesto de salud.
+// Se eligió el patrón Singleton para garantizar una única instancia centralizada del inventario en todo el puesto de salud.
 public class Almacen {
 
     private static Almacen instancia;
+    private String nombreAlmacen;
     private List<Medicamento> medicamentos;
 
-    // Constructor privado: evita que se creen multiples almacenes con 'new Almacen()'
+    // Constructor privado: evita que se creen múltiples almacenes con 'new Almacen()'
     private Almacen() {
+        this.nombreAlmacen = "Almacén Central - Puesto de Salud Indoamérica";
         this.medicamentos = new ArrayList<>();
     }
 
-    // Punto de acceso global a la unica instancia
+    // Punto de acceso global a la única instancia
     public static Almacen getInstancia() {
         if (instancia == null) {
             instancia = new Almacen();
@@ -23,10 +25,14 @@ public class Almacen {
         return instancia;
     }
 
-    // Agregacion: recibe medicamentos ya creados y los agrega al inventario
+    public String getNombreAlmacen() {
+        return nombreAlmacen;
+    }
+
+    // Agregación: recibe medicamentos ya creados y los agrega al inventario
     public void agregarMedicamento(Medicamento medicamento) {
         if (medicamento == null) {
-            throw new IllegalArgumentException("Error: los datos del medicamento son obligatorios para el registro");
+            throw new IllegalArgumentException("Error: los datos del medicamento son obligatorios para el registro.");
         }
         this.medicamentos.add(medicamento);
     }
