@@ -168,7 +168,7 @@ public class SistemaIndoamerica {
 
     public int calcularTotalUnidadesDispensadas() {
         return citas.stream()
-                .flatMap(c -> c.getDetallesReceta().stream())
+                .flatMap(c -> c.getDetalleReceta().stream())
                 .map(d -> d.getCantidadEntregada())
                 .reduce(0, (acc, cantidad) -> acc + cantidad);
     }
