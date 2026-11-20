@@ -4,7 +4,6 @@ import excepciones.PacienteDuplicadoException;
 import excepciones.StockInsuficienteException;
 import modelo.Almacen;
 import modelo.CitaMedica;
-import modelo.DetalleReceta;
 import modelo.Medicamento;
 import modelo.Paciente;
 import modelo.ProfesionalSalud;
