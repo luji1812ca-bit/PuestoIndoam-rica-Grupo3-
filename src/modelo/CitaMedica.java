@@ -12,7 +12,7 @@ public class CitaMedica {
     private String motivo;
     private Paciente paciente;
     private ProfesionalSalud profesionalSalud;
-    private List<git pull origin main> detalleReceta;
+    private List<DetalleReceta> detalleReceta;
 
     public CitaMedica(String codigoCita, String fecha, String hora, String motivo,
                       Paciente paciente, ProfesionalSalud profesionalSalud) {
