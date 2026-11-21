@@ -299,9 +299,13 @@ public class Main {
             almacen.agregarMedicamento(new Medicamento("MED-001", "Paracetamol 500mg", 50, 15));
             almacen.agregarMedicamento(new Medicamento("MED-002", "Amoxicilina 500mg", 14, 15));
             almacen.agregarMedicamento(new Medicamento("MED-003", "Ibuprofeno 400mg", 5, 10));
+            almacen.agregarMedicamento(new Medicamento("MED-004", "Supracal 1g", 10, 20));
+            almacen.agregarMedicamento(new Medicamento("MED-005", "azitromicina 500mg",12 , 18));
+            almacen.agregarMedicamento(new Medicamento("MED-006", "Losartán 50mg",9 , 14));
 
             sistema.registrarPaciente(new Paciente("45678912", "Juan Carlos Pérez", 68, "944112233", "HC-2026-01", "SIS"));
-            sistema.registrarPaciente(new Paciente("78945612", "Lucía Mendoza", 25, "955667788", "HC-2026-02", "EsSalud"));
+            sistema.registrarPaciente(new Paciente("78945612", "Lucía Mendoza", 25, "955667788", "HC-2026-02", "Particular"));
+            sistema.registrarPaciente(new Paciente("72168233", "Miguel Vasquez Castro", 33, "998574135", "HC-2026-03", "SIS"));
 
             sistema.registrarProfesional(new ProfesionalSalud("18902345", "Dra. Elena Rojas", 41, "949887766", "Medicina General", "CMP-54321"));
             sistema.registrarProfesional(new ProfesionalSalud("19203456", "Lic. Carlos Vargas", 36, "948112233", "Enfermería", "CEP-98765"));
