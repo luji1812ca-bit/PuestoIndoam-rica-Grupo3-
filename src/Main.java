@@ -1,4 +1,3 @@
-
 import excepciones.DniInvalidoException;
 import excepciones.PacienteDuplicadoException;
 import excepciones.StockInsuficienteException;
@@ -19,7 +18,8 @@ public class Main {
 
     private static final Scanner scanner = new Scanner(System.in);
     private static final SistemaIndoamerica sistema = new SistemaIndoamerica();
-    private static final Almacen almacen = Almacen.getInstancia(); // Singleton
+    // Patrón Singleton: garantiza una única instancia compartida del inventario de farmacia
+    private static final Almacen almacen = Almacen.getInstancia();
 
     public static void main(String[] args) {
         cargarDatosIniciales();
@@ -36,54 +36,61 @@ public class Main {
                 case 4 -> gestionarCitaYDispensacionUI();
                 case 5 -> mostrarDirectorioEInventarioUI();
                 case 6 -> mostrarReportesStreamsUI();
-                case 0 -> System.out.println("\nCerrando Sistema Rural Indoamérica. ¡Hasta pronto!");
-                default -> System.out.println("\n[!] Opción no válida. Intente nuevamente.");
+                case 0 -> {
+                    System.out.println("\nCerrando sistema del Puesto de Salud Indoamérica. ¡Hasta pronto!");
+                    scanner.close();
+                    System.exit(0);
+                }
+                default -> System.out.println("\n[!] Opción no válida. Ingrese un número del 0 al 6.");
             }
         }
-        scanner.close();
     }
 
     private static void mostrarMenu() {
         System.out.println("\n============================================================");
-        System.out.println("   PUESTO DE SALUD INDOAMÉRICA - MENÚ PRINCIPAL");
+        System.out.println("   PUESTO DE SALUD INDOAMÉRICA - SISTEMA DE ATENCIÓN");
         System.out.println("============================================================");
-        System.out.println("1. Registrar Paciente (Manual o vía PersonaFactory)");
+        System.out.println("1. Registrar Nuevo Paciente");
         System.out.println("2. Registrar Profesional de Salud");
-        System.out.println("3. Agregar Medicamento al Almacén");
-        System.out.println("4. Registrar Cita Médica y Dispensar Medicamentos");
-        System.out.println("5. Ver Directorio (Polimorfismo) e Inventario");
-        System.out.println("6. Reportes Analíticos (Lambdas, Funciones Puras y Streams)");
-        System.out.println("0. Salir");
+        System.out.println("3. Ingresar Medicamento a Farmacia");
+        System.out.println("4. Registrar Consulta Médica y Entrega de Receta");
+        System.out.println("5. Consultar Padrón de Personas e Inventario");
+        System.out.println("6. Reportes de Gestión y Estadísticas de Farmacia");
+        System.out.println("0. Salir del Sistema");
         System.out.println("------------------------------------------------------------");
     }
 
     // -------------------------------------------------------------------------
-    // OPCIÓN 1: REGISTRO DE PACIENTE (Factory / Constructor + Excepciones)
+    // OPCIÓN 1: ADMISIÓN DE PACIENTE (Patrón Factory + Excepciones)
     // -------------------------------------------------------------------------
     private static void registrarPacienteUI() {
-        System.out.println("\n--- REGISTRO DE PACIENTE ---");
+        System.out.println("\n--- ADMISIÓN DE PACIENTE ---");
         try {
             String dni = leerTexto("DNI (8 dígitos): ");
             String nombre = leerTexto("Nombre completo: ");
             int edad = leerEntero("Edad: ");
-            String telefono = leerTexto("Teléfono (9 dígitos): ");
-            String modo = leerTexto("¿Usar valores por defecto de PersonaFactory (HC-PENDIENTE / SIS)? (S/N): ");
+            String telefono = leerTexto("Teléfono celular (9 dígitos): ");
 
-            Paciente nuevoPaciente;
-            if (modo.equalsIgnoreCase("S")) {
-                Persona p = PersonaFactory.crearPersona("paciente", dni, nombre, edad, telefono);
-                nuevoPaciente = (Paciente) p;
+            // Patrón Factory: centraliza la creación base del paciente sin acoplar la vista
+            Paciente nuevoPaciente = (Paciente) PersonaFactory.crearPersona(
+                    "paciente", dni, nombre, edad, telefono);
+
+            String tieneHC = leerTexto("¿El paciente ya cuenta con Historia Clínica y Seguro? (S/N): ");
+
+            if (tieneHC.equalsIgnoreCase("S")) {
+                String hc = leerTexto("Número de Historia Clínica (ej. HC-2026-05): ");
+                String seguro = leerTexto("Tipo de Seguro (SIS / EsSalud / Particular): ");
+                nuevoPaciente.setNumeroHistoriaClinica(hc);
+                nuevoPaciente.setTipoSeguro(seguro);
             } else {
-                String hc = leerTexto("Número de Historia Clínica: ");
-                String seguro = leerTexto("Tipo de Seguro (ej. SIS, EsSalud): ");
-                nuevoPaciente = new Paciente(dni, nombre, edad, telefono, hc, seguro);
+                System.out.println("  -> Admisión rápida asignada: Historia [HC-PENDIENTE] | Seguro [SIS].");
             }
 
             sistema.registrarPaciente(nuevoPaciente);
             System.out.println("[OK] Paciente registrado: " + nuevoPaciente.mostrarResumen());
 
         } catch (DniInvalidoException | PacienteDuplicadoException | IllegalArgumentException e) {
-            System.out.println("[ERROR DE VALIDACIÓN]: " + e.getMessage());
+            System.out.println("[AVISO DE VALIDACIÓN]: " + e.getMessage());
         }
     }
 
@@ -91,128 +98,134 @@ public class Main {
     // OPCIÓN 2: REGISTRO DE PROFESIONAL DE SALUD
     // -------------------------------------------------------------------------
     private static void registrarProfesionalUI() {
-        System.out.println("\n--- REGISTRO DE PROFESIONAL DE SALUD ---");
+        System.out.println("\n--- REGISTRO DE PERSONAL DE SALUD ---");
         try {
             String dni = leerTexto("DNI (8 dígitos): ");
             String nombre = leerTexto("Nombre completo: ");
             int edad = leerEntero("Edad: ");
-            String telefono = leerTexto("Teléfono (9 dígitos): ");
-            String especialidad = leerTexto("Especialidad: ");
-            String colegiatura = leerTexto("Número de Colegiatura: ");
+            String telefono = leerTexto("Teléfono celular (9 dígitos): ");
+            String especialidad = leerTexto("Especialidad (ej. Medicina General, Enfermería): ");
+            String colegiatura = leerTexto("Número de Colegiatura (ej. CMP-54321): ");
 
             ProfesionalSalud prof = new ProfesionalSalud(dni, nombre, edad, telefono, especialidad, colegiatura);
             sistema.registrarProfesional(prof);
             System.out.println("[OK] Profesional registrado: " + prof.mostrarResumen());
 
         } catch (DniInvalidoException | IllegalArgumentException e) {
-            System.out.println("[ERROR DE VALIDACIÓN]: " + e.getMessage());
+            System.out.println("[AVISO DE VALIDACIÓN]: " + e.getMessage());
         }
     }
 
     // -------------------------------------------------------------------------
-    // OPCIÓN 3: AGREGAR MEDICAMENTO AL ALMACÉN (Singleton)
+    // OPCIÓN 3: INGRESO DE MEDICAMENTO A FARMACIA (Singleton)
     // -------------------------------------------------------------------------
     private static void registrarMedicamentoUI() {
-        System.out.println("\n--- INGRESO DE MEDICAMENTO AL ALMACÉN ---");
+        System.out.println("\n--- INGRESO DE MEDICAMENTO A FARMACIA ---");
         try {
-            String codigo = leerTexto("Código (ej. MED-001): ");
+            String codigo = leerTexto("Código del medicamento (ej. MED-004): ");
             if (almacen.buscarPorCodigo(codigo) != null) {
-                System.out.println("[!] Ya existe un medicamento con el código " + codigo);
+                System.out.println("[!] Ya existe un medicamento registrado con el código " + codigo);
                 return;
             }
-            String nombre = leerTexto("Nombre del medicamento: ");
-            int stockActual = leerEntero("Stock inicial: ");
-            int stockMinimo = leerEntero("Stock mínimo de alerta: ");
+            String nombre = leerTexto("Nombre y concentración (ej. Ibuprofeno 400mg): ");
+            int stockActual = leerEntero("Cantidad de unidades que ingresan: ");
+            int stockMinimo = leerEntero("Cantidad mínima para alerta de reposición: ");
 
             Medicamento med = new Medicamento(codigo, nombre, stockActual, stockMinimo);
             almacen.agregarMedicamento(med);
-            System.out.println("[OK] Medicamento agregado al inventario.");
+            System.out.println("[OK] Medicamento agregado al inventario de farmacia.");
 
         } catch (IllegalArgumentException e) {
-            System.out.println("[ERROR]: " + e.getMessage());
+            System.out.println("[AVISO]: " + e.getMessage());
         }
     }
 
     // -------------------------------------------------------------------------
-    // OPCIÓN 4: CITA MÉDICA Y DISPENSACIÓN (Composición + StockInsuficiente)
+    // OPCIÓN 4: CONSULTA MÉDICA Y DISPENSACIÓN (Composición + StockInsuficiente)
     // -------------------------------------------------------------------------
     private static void gestionarCitaYDispensacionUI() {
-        System.out.println("\n--- NUEVA CITA MÉDICA Y DISPENSACIÓN ---");
+        System.out.println("\n--- NUEVA CONSULTA MÉDICA Y ENTREGA DE RECETA ---");
         if (sistema.getPacientes().isEmpty() || sistema.getProfesionales().isEmpty()) {
             System.out.println("[!] Debe haber al menos un paciente y un profesional registrados.");
             return;
         }
 
         try {
-            String codigoCita = leerTexto("Código de cita (ej. CITA-002): ");
-            String fecha = leerTexto("Fecha (YYYY-MM-DD): ");
+            String codigoCita = leerTexto("Código de atención (ej. CITA-001): ");
+            String fecha = leerTexto("Fecha (AAAA-MM-DD): ");
             String hora = leerTexto("Hora (HH:MM): ");
-            String motivo = leerTexto("Motivo de consulta: ");
+            String motivo = leerTexto("Motivo de consulta o diagnóstico: ");
 
-            // Selección de Paciente
-            System.out.println("\nPacientes disponibles:");
+            // Selección de Paciente (numerado desde 1 para el usuario)
+            System.out.println("\nPacientes registrados:");
             List<Paciente> pacientes = sistema.getPacientes();
             for (int i = 0; i < pacientes.size(); i++) {
-                System.out.println("  [" + i + "] " + pacientes.get(i).getNombre()
+                System.out.println("  " + (i + 1) + ". " + pacientes.get(i).getNombre()
                         + " (DNI: " + pacientes.get(i).obtenerDniEnmascarado() + ")");
             }
-            int idxPac = leerEntero("Seleccione índice del paciente: ");
-            if (idxPac < 0 || idxPac >= pacientes.size()) {
-                System.out.println("[!] Índice de paciente fuera de rango.");
+            int numPac = leerEntero("Seleccione el número del paciente: ");
+            if (numPac < 1 || numPac > pacientes.size()) {
+                System.out.println("[!] Número de paciente no válido.");
                 return;
             }
 
-            // Selección de Profesional
-            System.out.println("\nProfesionales disponibles:");
+            // Selección de Profesional (numerado desde 1 para el usuario)
+            System.out.println("\nProfesionales de turno:");
             List<ProfesionalSalud> profesionales = sistema.getProfesionales();
             for (int i = 0; i < profesionales.size(); i++) {
-                System.out.println("  [" + i + "] " + profesionales.get(i).getNombre()
+                System.out.println("  " + (i + 1) + ". " + profesionales.get(i).getNombre()
                         + " - " + profesionales.get(i).getEspecialidad());
             }
-            int idxProf = leerEntero("Seleccione índice del profesional: ");
-            if (idxProf < 0 || idxProf >= profesionales.size()) {
-                System.out.println("[!] Índice de profesional fuera de rango.");
+            int numProf = leerEntero("Seleccione el número del profesional: ");
+            if (numProf < 1 || numProf > profesionales.size()) {
+                System.out.println("[!] Número de profesional no válido.");
                 return;
             }
 
             CitaMedica cita = new CitaMedica(
-                    codigoCita, fecha, hora, motivo, pacientes.get(idxPac), profesionales.get(idxProf));
+                    codigoCita, fecha, hora, motivo, pacientes.get(numPac - 1), profesionales.get(numProf - 1));
             sistema.registrarCita(cita);
 
-            // Bucle para dispensar medicamentos en la receta de la cita
-            String continuar = leerTexto("¿Desea dispensar medicamentos en esta cita? (S/N): ");
+            // Entrega de medicamentos recetados
+            String continuar = leerTexto("¿Entregar medicamentos recetados en esta consulta? (S/N): ");
             while (continuar.equalsIgnoreCase("S")) {
-                String codMed = leerTexto("Ingrese código del medicamento (ej. MED-001): ");
+                System.out.println("\n  Medicamentos disponibles en farmacia:");
+                for (Medicamento m : almacen.getMedicamentos()) {
+                    System.out.println("   * [" + m.getCodigo() + "] " + m.getNombre()
+                            + " (Disponible: " + m.getStockActual() + ")");
+                }
+
+                String codMed = leerTexto("  Ingrese código del medicamento (ej. MED-001): ");
                 Medicamento med = almacen.buscarPorCodigo(codMed);
 
                 if (med == null) {
-                    System.out.println("[!] No se encontró medicamento con código: " + codMed);
+                    System.out.println("  [!] No se encontró medicamento con código: " + codMed);
                 } else {
-                    System.out.println("    Seleccionado: " + med.getNombre() + " | Stock disponible: " + med.getStockActual());
-                    int cantidad = leerEntero("    Cantidad a entregar: ");
+                    int cantidad = leerEntero("  Cantidad de unidades a entregar de " + med.getNombre() + ": ");
                     try {
                         sistema.dispensarMedicamentoEnCita(cita, med, cantidad);
-                        System.out.println("    [OK] Dispensado. Nuevo stock: " + med.getStockActual());
+                        System.out.println("  [OK] Entrega registrada. Stock restante: " + med.getStockActual());
                     } catch (StockInsuficienteException | IllegalArgumentException e) {
-                        System.out.println("    [ALERTA DE STOCK]: " + e.getMessage());
+                        System.out.println("  [ALERTA DE FARMACIA]: " + e.getMessage());
                     }
                 }
-                continuar = leerTexto("¿Agregar otro medicamento a esta cita? (S/N): ");
+                continuar = leerTexto("¿Agregar otro medicamento a la receta? (S/N): ");
             }
 
-            System.out.println("\n--- RESUMEN DE LA CITA REGISTRADA ---");
+            System.out.println("\n--- CONSTANCIA DE ATENCIÓN REGISTRADA ---");
             System.out.println(cita.mostrarResumenCita());
 
         } catch (IllegalArgumentException e) {
-            System.out.println("[ERROR EN DATOS DE CITA]: " + e.getMessage());
+            System.out.println("[AVISO EN DATOS DE ATENCIÓN]: " + e.getMessage());
         }
     }
 
     // -------------------------------------------------------------------------
-    // OPCIÓN 5: POLIMORFISMO E INVENTARIO
+    // OPCIÓN 5: PADRÓN E INVENTARIO (Polimorfismo en Persona)
     // -------------------------------------------------------------------------
     private static void mostrarDirectorioEInventarioUI() {
-        System.out.println("\n--- DIRECTORIO GENERAL (POLIMORFISMO EN PERSONA) ---");
+        System.out.println("\n--- PADRÓN DE PACIENTES Y PERSONAL DE SALUD ---");
+        // Polimorfismo: invocación dinámica de mostrarResumen() sobre la clase base Persona
         List<Persona> todos = new ArrayList<>();
         todos.addAll(sistema.getPacientes());
         todos.addAll(sistema.getProfesionales());
@@ -221,54 +234,48 @@ public class Main {
             System.out.println("  * " + p.mostrarResumen());
         }
 
-        System.out.println("\n--- INVENTARIO ACTUAL DEL ALMACÉN ---");
+        System.out.println("\n--- INVENTARIO ACTUAL DE FARMACIA ---");
         for (Medicamento m : almacen.getMedicamentos()) {
             String alerta = SistemaIndoamerica.evaluarNivelAlertaStock(m.getStockActual(), m.getStockMinimo());
-            System.out.printf("  [%s] %-18s | Stock: %2d (Mín: %2d) | Estado: %s%n",
+            System.out.printf("  [%s] %-18s | Disponible: %2d (Mínimo: %2d) | Estado: %s%n",
                     m.getCodigo(), m.getNombre(), m.getStockActual(), m.getStockMinimo(), alerta);
         }
     }
 
     // -------------------------------------------------------------------------
-    // OPCIÓN 6: STREAMS, LAMBDAS Y FUNCIONES PURAS
+    // OPCIÓN 6: REPORTES Y ESTADÍSTICAS (Streams, Lambdas y Funciones Puras)
     // -------------------------------------------------------------------------
     private static void mostrarReportesStreamsUI() {
-        System.out.println("\n--- REPORTES ANALÍTICOS (STREAMS & LAMBDAS) ---");
+        System.out.println("\n--- REPORTES DE GESTIÓN Y FARMACIA ---");
 
-        // 1. Streams: Stock crítico
-        System.out.println("1. Medicamentos en stock crítico (<= mínimo): " + sistema.obtenerNombresStockCritico());
+        // Consultas declarativas con Streams
+        System.out.println("1. Medicamentos por agotarse (stock crítico) : " + sistema.obtenerNombresStockCritico());
+        System.out.println("2. Total de unidades entregadas en consultas : " + sistema.calcularTotalUnidadesDispensadas());
+        System.out.println("3. Especialidades médicas activas            : " + sistema.obtenerEspecialidadesUnicas());
+        System.out.println("4. Existencias actuales por código           : " + sistema.obtenerMapaStockPorCodigo());
 
-        // 2. Streams: Total unidades dispensadas (flatMap + map + reduce)
-        System.out.println("2. Total unidades dispensadas en citas      : " + sistema.calcularTotalUnidadesDispensadas());
-
-        // 3. Streams: Especialidades únicas (Set)
-        System.out.println("3. Especialidades médicas únicas (Set)      : " + sistema.obtenerEspecialidadesUnicas());
-
-        // 4. Streams: Mapa de stock (Map)
-        System.out.println("4. Mapa Código -> Stock (Map)               : " + sistema.obtenerMapaStockPorCodigo());
-
-        // 5. Streams: Filtro por seguro
-        String seguro = leerTexto("\nIngrese tipo de seguro a consultar (ej. SIS, EsSalud): ");
+        // Filtro por tipo de seguro
+        String seguro = leerTexto("\nConsultar pacientes por tipo de seguro (ej. SIS, EsSalud): ");
         List<String> asegurados = sistema.listarResumenesPorSeguro(seguro);
-        System.out.println("   Pacientes encontrados con seguro '" + seguro + "': " + asegurados.size());
+        System.out.println("   Total de afiliados a '" + seguro + "': " + asegurados.size());
         asegurados.forEach(resumen -> System.out.println("    -> " + resumen));
 
-        // 6. Orden superior con Predicate: Adultos mayores
-        int edadMinima = leerEntero("\nFiltrar pacientes mayores o iguales a edad: ");
+        // Filtro por edad (Orden superior con Predicate)
+        int edadMinima = leerEntero("\nConsultar pacientes a partir de qué edad (ej. 60): ");
         List<Paciente> filtrados = sistema.filtrarPacientesPorCriterio(p -> p.getEdad() >= edadMinima);
-        System.out.println("   Pacientes con edad >= " + edadMinima + ": " + filtrados.size());
+        System.out.println("   Pacientes de " + edadMinima + " años a más: " + filtrados.size());
         filtrados.forEach(p -> System.out.println("    -> " + p.getNombre() + " (" + p.getEdad() + " años)"));
 
-        // 7. Función pura: Proyección de demanda
+        // Función pura: proyección de abastecimiento sin mutar el inventario actual
         List<Integer> consumos = almacen.getMedicamentos().stream()
                 .map(Medicamento::getStockActual)
                 .toList();
-        System.out.println("\n5. Proyección de demanda (+25% sobre stock actual): "
+        System.out.println("\n5. Estimación de abastecimiento (+25% para próximo mes): "
                 + SistemaIndoamerica.proyectarDemandaMensual(consumos, 0.25));
     }
 
     // -------------------------------------------------------------------------
-    // UTILIDADES DE LECTURA SEGURA Y PRECARGA DE DATOS
+    // UTILIDADES DE LECTURA SEGURA Y PRECARGA DE DATOS FICTICIOS
     // -------------------------------------------------------------------------
     private static String leerTexto(String mensaje) {
         System.out.print(mensaje);
@@ -282,7 +289,7 @@ public class Main {
             try {
                 return Integer.parseInt(entrada);
             } catch (NumberFormatException e) {
-                System.out.println("[!] Ingrese un número entero válido.");
+                System.out.println("[!] Por favor, ingrese un número válido.");
             }
         }
     }
@@ -299,7 +306,7 @@ public class Main {
             sistema.registrarProfesional(new ProfesionalSalud("18902345", "Dra. Elena Rojas", 41, "949887766", "Medicina General", "CMP-54321"));
             sistema.registrarProfesional(new ProfesionalSalud("19203456", "Lic. Carlos Vargas", 36, "948112233", "Enfermería", "CEP-98765"));
         } catch (Exception e) {
-            System.out.println("[Error en precarga inicial]: " + e.getMessage());
+            System.out.println("[Error en carga inicial]: " + e.getMessage());
         }
     }
 }
