@@ -80,7 +80,7 @@ public class SistemaIndoamerica {
                     + ", solicitado: " + cantidad);
         }
 
-        medicamento.descontarStock(cantidad);
+      
         cita.agregarMedicamentoRecetado(medicamento, cantidad); // Composición del Tema 3
     }
 
