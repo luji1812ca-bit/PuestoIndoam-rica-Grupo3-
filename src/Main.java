@@ -255,7 +255,7 @@ public class Main {
         System.out.println("4. Existencias actuales por código           : " + sistema.obtenerMapaStockPorCodigo());
 
         // Filtro por tipo de seguro
-        String seguro = leerTexto("\nConsultar pacientes por tipo de seguro (ej. SIS, EsSalud): ");
+        String seguro = leerTexto("\nConsultar pacientes por tipo de seguro (ej. SIS, Particular): ");
         List<String> asegurados = sistema.listarResumenesPorSeguro(seguro);
         System.out.println("   Total de afiliados a '" + seguro + "': " + asegurados.size());
         asegurados.forEach(resumen -> System.out.println("    -> " + resumen));
